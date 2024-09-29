@@ -1,7 +1,6 @@
 import { type GameBoard, gameBoardSchema } from '@/schemas/game';
 import { WINNING_COMBINATIONS } from '@/shared/constants';
 import { GameCellsEnum, GameStateEnum } from '@/shared/enums';
-import { pickRandomFrom } from '../common/pick-random-from';
 
 export const parseGameState = (board: GameBoard): GameStateEnum => {
   const parsedState = gameBoardSchema.parse(board.toLowerCase());
@@ -33,22 +32,74 @@ export const parseGameState = (board: GameBoard): GameStateEnum => {
   return state;
 };
 
-export const getNextBoard = (board: GameBoard): GameBoard => {
+const makeTurn = (board: GameBoard, cellIndex: number, symbol: GameCellsEnum): GameBoard => {
   const nextBoard = board.split('');
 
+  nextBoard[cellIndex] = symbol;
+
+  return nextBoard.join('');
+};
+
+const getEmptyCells = (board: GameBoard): Array<number> => {
   const emptyCells: Array<number> = [];
 
-  for (let i = 0; i < nextBoard.length; i++) {
-    if (nextBoard[i] !== GameCellsEnum.Empty) continue;
-
-    emptyCells.push(i);
+  for (let i = 0; i < board.length; i++) {
+    if (board[i] === GameCellsEnum.Empty) {
+      emptyCells.push(i);
+    }
   }
+
+  return emptyCells;
+};
+
+const valueByGameStateLookup = {
+  [GameStateEnum.XWon]: -1,
+  [GameStateEnum.OWon]: 1,
+  [GameStateEnum.NoWinner]: 0,
+};
+
+const minimax = (board: GameBoard, isMaximizing: boolean, cache: Record<string, number> = {}): number => {
+  if (cache[board]) return cache[board];
+
+  const gameState = parseGameState(board);
+
+  if (gameState !== GameStateEnum.InProgress) return valueByGameStateLookup[gameState];
+
+  const emptyCells = getEmptyCells(board);
+
+  return emptyCells.reduce((acc, cell) => {
+    const nextBoard = makeTurn(board, cell, isMaximizing ? GameCellsEnum.O : GameCellsEnum.X);
+
+    const score = minimax(nextBoard, !isMaximizing, cache);
+
+    cache[nextBoard] = score;
+
+    return isMaximizing ? Math.max(acc, score) : Math.min(acc, score);
+  }, 0);
+};
+
+// We use this cache to reduce the number of calculations since a lot of them are already computed
+// This cache will live for the duration of the server process and will be shared between all requests
+// It will contain all of the possible game states for a 3x3 board probably in a couple of games
+const cellScoresLookup = {};
+
+export const getNextBoard = (board: GameBoard): GameBoard => {
+  const emptyCells = getEmptyCells(board);
 
   if (emptyCells.length === 0) return board;
 
-  const randomCellIndex = pickRandomFrom(emptyCells);
+  const bestOption = emptyCells.reduce(
+    (acc, cell) => {
+      const score = minimax(makeTurn(board, cell, GameCellsEnum.O), false, cellScoresLookup);
 
-  nextBoard[randomCellIndex] = GameCellsEnum.O;
+      if (acc.score > score) return acc;
 
-  return nextBoard.join('');
+      return { cell, score };
+    },
+    { cell: -1, score: -Infinity },
+  );
+
+  const { cell } = bestOption;
+
+  return makeTurn(board, cell, GameCellsEnum.O);
 };
