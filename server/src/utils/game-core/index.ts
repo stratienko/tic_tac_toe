@@ -67,15 +67,18 @@ const minimax = (board: GameBoard, isMaximizing: boolean, cache: Record<string, 
 
   const emptyCells = getEmptyCells(board);
 
-  return emptyCells.reduce((acc, cell) => {
-    const nextBoard = makeTurn(board, cell, isMaximizing ? GameCellsEnum.O : GameCellsEnum.X);
+  return emptyCells.reduce(
+    (acc, cell) => {
+      const nextBoard = makeTurn(board, cell, isMaximizing ? GameCellsEnum.O : GameCellsEnum.X);
 
-    const score = minimax(nextBoard, !isMaximizing, cache);
+      const score = minimax(nextBoard, !isMaximizing, cache);
 
-    cache[nextBoard] = score;
+      cache[nextBoard] = score;
 
-    return isMaximizing ? Math.max(acc, score) : Math.min(acc, score);
-  }, 0);
+      return isMaximizing ? Math.max(acc, score) : Math.min(acc, score);
+    },
+    isMaximizing ? -Infinity : Infinity,
+  );
 };
 
 // We use this cache to reduce the number of calculations since a lot of them are already computed
