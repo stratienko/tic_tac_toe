@@ -1,0 +1,11 @@
+.game-cell-content {
+  animation: appear 0.5s;
+  animation-fill-mode: forwards;
+  scale: 0;
+}
+
+@keyframes appear {
+  to {
+    scale: 1;
+  }
+}

@@ -1,7 +1,9 @@
-import { useState } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 import { fetchNextGameState } from '@/api/post/next-game-state';
 import { sleep } from './utils/sleep';
-import { GameCellsEnum, GameStateEnum } from './shared/enums';
+import { GameStateEnum } from './shared/enums';
+import { GameBoard } from './components/game-board';
+import { cn } from './utils/cn';
 
 type GameState = {
   board: string;
@@ -18,7 +20,7 @@ export function App() {
 
   const [gameState, setGameState] = useState(defaultGameState);
 
-  const handlePlayerMove = (index: number) => async () => {
+  const handlePlayerMove = async (index: number) => {
     const nextState = gameState.board.split('');
 
     nextState[index] = 'x';
@@ -40,31 +42,40 @@ export function App() {
     }
   };
 
+  const resetGame = () => {
+    setGameState(defaultGameState);
+  };
+
+  const title = useMemo(() => {
+    if (gameState.state === GameStateEnum.OWon) return 'Oh no!';
+
+    if (gameState.state === GameStateEnum.XWon) return 'Hell yeah!';
+
+    if (gameState.state === GameStateEnum.NoWinner) return 'Good luck next time!';
+
+    return 'You can do it!';
+  }, [gameState.state]);
+
+  const isGameOver = gameState.state !== GameStateEnum.InProgress;
+
   return (
-    <section className="flex h-full flex-col items-center justify-center">
-      <ul className="mx-auto grid w-full max-w-md grid-cols-3">
-        {gameState.board.split('').map((cell, index) => {
-          const content = (() => {
-            if (cell === GameCellsEnum.X) return <span className="text-2xl">X</span>;
+    <section className="flex size-full flex-col items-center justify-center gap-20 px-4">
+      <h1 className="text-2xl font-semibold">{title}</h1>
 
-            if (cell === GameCellsEnum.O) return <span className="text-2xl">0</span>;
+      <div className="w-full max-w-md">
+        <GameBoard gameState={gameState} loading={isLoading} onCellClick={handlePlayerMove} />
+      </div>
 
-            return (
-              <button
-                className="size-full outline-4 outline-offset-1 outline-blue-600 focus:z-10 focus:outline"
-                disabled={isLoading || gameState.state !== GameStateEnum.InProgress}
-                onClick={handlePlayerMove(index)}
-              />
-            );
-          })();
-
-          return (
-            <li className="flex aspect-square w-full items-center justify-center border border-gray-300" key={index}>
-              {content}
-            </li>
-          );
-        })}
-      </ul>
+      <button
+        className={cn(
+          'w-full bg-black px-6 py-3 text-base text-white transition-all sm:w-36',
+          isGameOver ? 'opacity-100' : 'opacity-0',
+        )}
+        disabled={!isGameOver}
+        onClick={resetGame}
+      >
+        Restart
+      </button>
     </section>
   );
 }
