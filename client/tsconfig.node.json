@@ -16,7 +16,8 @@
 
     /* Linting */
     "strict": true,
-    "target": "ES2022"
+    "target": "ES2022",
+    "composite": true
   },
   "include": ["vite.config.ts"]
 }
