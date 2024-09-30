@@ -1,7 +1,7 @@
 import { environmentSchema } from '@/schemas/env';
 
 /**
- * A function that reads the environment variables and validates them against the environment schema
+ * This function that reads the environment variables and validates them against the environment schema
  * @param env - The environment variables
  * @returns The validated environment variables or throws an error if the environment variables are missing or invalid
  */

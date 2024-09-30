@@ -10,7 +10,14 @@ const responseSchema = buildResponseSchema(
   }),
 );
 
-export const fetchNextGameState = async (board: string) => {
+type NextGameStateResponse = z.infer<typeof responseSchema>;
+
+/**
+ * This function sends the current game state to the server and returnes the next game state.
+ * @param {string}board - The current game state. A string of 9 characters including 'x', '0', or '_'.
+ * @returns {Promise<NextGameStateResponse>} The next game state.
+ */
+export const fetchNextGameState = async (board: string): Promise<NextGameStateResponse> => {
   try {
     const response = await apiClient.post('/v1/next-game-state', JSON.stringify({ board }));
 
@@ -18,6 +25,9 @@ export const fetchNextGameState = async (board: string) => {
 
     return parsedResult;
   } catch (error) {
-    console.log({ error });
+    // TODO: Add error handling
+    console.error({ error });
+
+    throw error;
   }
 };

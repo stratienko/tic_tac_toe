@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'preact/hooks';
 import { fetchNextGameState } from '@/api/post/next-game-state';
-import { sleep } from './utils/sleep';
-import { GameStateEnum } from './shared/enums';
-import { GameBoard } from './components/game-board';
-import { cn } from './utils/cn';
+import { sleep } from '@/utils/sleep';
+import { GameStateEnum } from '@/shared/enums';
+import { GameBoard } from '@/components/game-board';
+import { cn } from '@/utils/cn';
 
 type GameState = {
   board: string;
@@ -30,11 +30,17 @@ export function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetchNextGameState(nextState.join(''));
+      const [response] = await Promise.all([
+        fetchNextGameState(nextState.join('')),
+        // This is used to imitate AI thinking time.
+        // If retrieving the response is too fast, it will still take 1 second to update the board.
+        // Otherwise, the board will be updated when the response is received.
+        sleep(1000),
+      ]);
 
       if (!response) return;
 
-      await sleep(1000);
+      console.log({ response });
 
       setGameState(response.data);
     } finally {
