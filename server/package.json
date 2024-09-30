@@ -10,6 +10,7 @@
   },
   "description": "",
   "devDependencies": {
+    "@ef-carbon/tspm": "^2.2.5",
     "@eslint/compat": "^1.1.1",
     "@eslint/js": "^9.11.1",
     "@types/cors": "^2.8.17",
@@ -31,10 +32,9 @@
   "main": "index.js",
   "name": "server",
   "scripts": {
-    "build": "pnpm lint && pnpm tsc",
     "dev": "nodemon src/index.ts",
     "lint": "eslint . --fix",
-    "start": "node dist/index.js",
+    "start": "ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "version": "0.0.1"

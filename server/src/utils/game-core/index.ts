@@ -2,10 +2,10 @@ import { type GameBoard, gameBoardSchema } from '@/schemas/game';
 import { WINNING_COMBINATIONS } from '@/shared/constants';
 import { GameCellsEnum, GameStateEnum } from '@/shared/enums';
 
-export const parseGameState = (board: GameBoard): GameStateEnum => {
+export const getGameState = (board: GameBoard): GameStateEnum => {
   const parsedState = gameBoardSchema.parse(board.toLowerCase());
 
-  const symbols = ['x', '0'];
+  const symbols = [GameCellsEnum.X, GameCellsEnum.O];
 
   let state = GameStateEnum.InProgress;
 
@@ -16,10 +16,10 @@ export const parseGameState = (board: GameBoard): GameStateEnum => {
 
     if (!symbolAtA) continue;
 
-    if (!symbols.includes(symbolAtA)) continue;
+    if (!symbols.includes(symbolAtA as GameCellsEnum)) continue;
 
     if (symbolAtA === parsedState.at(b) && symbolAtA === parsedState.at(c)) {
-      state = symbolAtA === 'x' ? GameStateEnum.XWon : GameStateEnum.OWon;
+      state = symbolAtA === GameCellsEnum.X ? GameStateEnum.XWon : GameStateEnum.OWon;
 
       break;
     }
@@ -44,9 +44,9 @@ const getEmptyCells = (board: GameBoard): Array<number> => {
   const emptyCells: Array<number> = [];
 
   for (let i = 0; i < board.length; i++) {
-    if (board[i] === GameCellsEnum.Empty) {
-      emptyCells.push(i);
-    }
+    if (board[i] !== GameCellsEnum.Empty) continue;
+
+    emptyCells.push(i);
   }
 
   return emptyCells;
@@ -61,7 +61,7 @@ const valueByGameStateLookup = {
 const minimax = (board: GameBoard, isMaximizing: boolean, cache: Record<string, number> = {}): number => {
   if (cache[board]) return cache[board];
 
-  const gameState = parseGameState(board);
+  const gameState = getGameState(board);
 
   if (gameState !== GameStateEnum.InProgress) return valueByGameStateLookup[gameState];
 

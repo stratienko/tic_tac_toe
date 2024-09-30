@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --fix"
+    "build": "pnpm lint && tsc -b && vite build",
+    "start": "vite preview",
+    "lint": "eslint ."
   },
   "dependencies": {
     "axios": "^1.7.7",

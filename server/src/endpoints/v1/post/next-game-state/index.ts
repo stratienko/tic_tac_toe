@@ -1,16 +1,14 @@
 import { nextGameStateInputSchema, nextGameStateOutputSchema } from '@/schemas/next-game-state';
 import { GameStateEnum } from '@/shared/enums';
-import { getNextBoard, parseGameState } from '@/utils/game-core';
+import { getNextBoard, getGameState } from '@/utils/game-core';
 import { defaultEndpointsFactory } from 'express-zod-api';
 
 export const nextGameState = defaultEndpointsFactory.build({
   method: 'post',
   input: nextGameStateInputSchema,
   output: nextGameStateOutputSchema,
-  handler: async ({ input: { board }, logger }) => {
-    logger.debug('Current state:', { board });
-
-    const currentGameState = parseGameState(board);
+  handler: async ({ input: { board } }) => {
+    const currentGameState = getGameState(board);
 
     if (currentGameState !== GameStateEnum.InProgress) {
       return { board, state: currentGameState };
@@ -18,6 +16,6 @@ export const nextGameState = defaultEndpointsFactory.build({
 
     const nextBoard = getNextBoard(board);
 
-    return { board: nextBoard, state: parseGameState(nextBoard) };
+    return { board: nextBoard, state: getGameState(nextBoard) };
   },
 });
